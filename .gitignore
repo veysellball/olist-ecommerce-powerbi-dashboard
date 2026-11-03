@@ -1,0 +1,16 @@
+# OS & Editor
+.DS_Store
+Thumbs.db
+*.tmp
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# Power BI auto-save / backup artifacts (commit final .pbix, ignore temp locks)
+*.pbix.temp
