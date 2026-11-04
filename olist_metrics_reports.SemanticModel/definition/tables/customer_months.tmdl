@@ -1,0 +1,55 @@
+table customer_months
+	lineageTag: 144fe640-b67a-4148-9a57-fb0856140627
+
+	column customer_unique_id
+		dataType: string
+		lineageTag: 4ea5b0ef-758e-4f1d-a3ad-7823a09ed8b8
+		summarizeBy: none
+		sourceColumn: customer_unique_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column month
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 452a7ea7-d9c7-4c45-ac7a-a3858c47fb79
+		summarizeBy: none
+		sourceColumn: month
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column cohort
+		dataType: dateTime
+		formatString: mmm yyyy
+		lineageTag: 6670e420-8ad2-4d43-9d47-edc52ff560d6
+		summarizeBy: none
+		sourceColumn: cohort
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column offset
+		dataType: int64
+		formatString: 0
+		lineageTag: 0ce73009-a4e5-427f-9ec6-6c2cf6871ea0
+		summarizeBy: sum
+		sourceColumn: offset
+
+		annotation SummarizationSetBy = Automatic
+
+	partition customer_months = m
+		mode: import
+		queryGroup: Analytics
+		source =
+				let
+				    Valid = Table.SelectRows(fact_orders, each [is_valid_purchase]),
+				    WithMonth = Table.AddColumn(Valid, "month", each Date.StartOfMonth([purchase_date]), type date),
+				    Cohorts = fnCohort(WithMonth, "customer_unique_id", "month")
+				in
+				    Cohorts
+
+	annotation PBI_ResultType = Table
+

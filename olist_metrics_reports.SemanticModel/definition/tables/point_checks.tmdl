@@ -1,0 +1,71 @@
+table point_checks
+	lineageTag: 6b305e63-1f30-4e61-bd86-e96581de0eac
+
+	column 'Check Id'
+		isHidden
+		lineageTag: d979ebb9-e572-4ecc-94f3-c309874a22ab
+		isNameInferred
+		sourceColumn: [Check Id]
+
+	column Check
+		lineageTag: 54ca0797-f877-42d8-8f7d-29f03721cf8a
+		isNameInferred
+		sourceColumn: [Check]
+		sortByColumn: 'Check Id'
+
+	column 'Project 3'
+		lineageTag: 8531a9c9-15ae-491d-9cdb-e59fef177bf7
+		isNameInferred
+		sourceColumn: [Project 3]
+
+	column Decimals
+		isHidden
+		lineageTag: 08959902-1c17-4bd0-ac3e-dc8a18bf91b7
+		isNameInferred
+		sourceColumn: [Decimals]
+
+	partition point_checks = calculated
+		mode: import
+		source =
+				DATATABLE (
+				    "Check Id", INTEGER,
+				    "Check", STRING,
+				    "Project 3", DOUBLE,
+				    "Decimals", INTEGER,
+				    {
+				        { 1, "All orders in window (incl. canceled)", 99092, 0 },
+				        { 2, "Valid orders", 97910, 0 },
+				        { 3, "Delivered", 96203, 0 },
+				        { 4, "On time", 89672, 0 },
+				        { 5, "Good Orders", 73734, 0 },
+				        { 6, "Delivered rate", 0.9826, 4 },
+				        { 7, "On-time rate", 0.9321, 4 },
+				        { 8, "Good review rate", 0.8223, 4 },
+				        { 9, "GMV", 13449529.68, 2 },
+				        { 10, "Freight share", 0.1425, 4 },
+				        { 11, "Cancellation rate", 0.0119, 4 },
+				        { 12, "Avg promised days", 24.32, 2 },
+				        { 13, "New customers (all months)", 94697, 0 },
+				        { 14, "Aug 2018 orders", 6421, 0 },
+				        { 15, "Aug 2018 Good Orders", 5109, 0 },
+				        { 16, "Aug 2018 new customers", 6209, 0 },
+				        { 17, "Nov 2017 GMV", 1003862.14, 2 },
+				        { 18, "On-time rate Oct 2017", 0.9582, 4 },
+				        { 19, "On-time rate Nov 2017", 0.876, 4 },
+				        { 20, "On-time rate Mar 2018", 0.8104, 4 },
+				        { 21, "Funnel: placed", 99092, 0 },
+				        { 22, "Funnel: approved", 98957, 0 },
+				        { 23, "Funnel: shipped", 97362, 0 },
+				        { 24, "Funnel: delivered", 96188, 0 },
+				        { 25, "Funnel: on time", 89658, 0 },
+				        { 26, "Funnel: good review", 73722, 0 },
+				        { 27, "Repeat rate 30d", 0.0067, 4 },
+				        { 28, "Repeat rate 90d", 0.0131, 4 },
+				        { 29, "Repeat rate 180d", 0.0199, 4 },
+				        { 30, "Repeat rate 365d", 0.0334, 4 },
+				        { 31, "Repeat buyers' share of GMV", 0.0217, 4 },
+				        { 32, "Buyer month-3 retention", 0.0025, 4 },
+				        { 33, "Seller month-3 retention", 0.5322, 4 }
+				    }
+				)
+

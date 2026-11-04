@@ -1,0 +1,20 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "7ca7c70809ee527410a0",
+  "displayName": "Health",
+  "displayOption": "FitToPage",
+  "height": 1080,
+  "width": 1920,
+  "visualInteractions": [
+    {
+      "source": "ada272e4b6b2d6d4d038",
+      "target": "5d8081251eb64a71bd3d",
+      "type": "NoFilter"
+    },
+    {
+      "source": "ada272e4b6b2d6d4d038",
+      "target": "69bae10907ff8ef955db",
+      "type": "NoFilter"
+    }
+  ]
+}

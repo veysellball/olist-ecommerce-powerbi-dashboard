@@ -1,0 +1,424 @@
+table _Measures
+	lineageTag: 5c63160b-647d-4355-897e-9596ba743af2
+
+	measure 'Orders (All)' = COUNTROWS ( fact_orders )
+		formatString: #,0
+		displayFolder: 9 QA
+		lineageTag: 09530aa4-57d6-4bee-98f2-a988a801daea
+
+	measure 'Valid Orders' =
+			
+			CALCULATE ( COUNTROWS ( fact_orders ), fact_orders[is_valid_purchase] = TRUE () )
+		formatString: 0
+		displayFolder: 2 Inputs
+		lineageTag: 09c8c333-14da-45f8-922b-dc4aaf5d66f0
+
+	measure Delivered =
+			
+			CALCULATE ( [Valid Orders], fact_orders[is_delivered] = TRUE () )
+		formatString: 0
+		displayFolder: 2 Inputs
+		lineageTag: 607f4de4-0e2d-4e1a-85b9-d43416e0bf49
+
+	measure 'On Time' =
+			
+			CALCULATE ( [Valid Orders], fact_orders[is_on_time] = TRUE () )
+		formatString: 0
+		displayFolder: 2 Inputs
+		lineageTag: cb19ba94-352d-4020-81fc-9933c40be1ce
+
+	measure 'Good Orders' =
+			
+			CALCULATE ( [Valid Orders], fact_orders[is_good_order] = TRUE () )
+		formatString: 0
+		displayFolder: 1 North Star
+		lineageTag: fc74667d-189d-4440-8d55-63cd0f04efbe
+
+	measure 'Delivered Rate' = DIVIDE ( [Delivered], [Valid Orders] )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 2 Inputs
+		lineageTag: 662b3b2d-950b-4f81-9d84-df2d3da414be
+
+	measure 'On-Time Rate' = DIVIDE ( [On Time], [Delivered] )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 2 Inputs
+		lineageTag: e835c119-fac1-43e5-9fb2-55e348eb12af
+
+	measure 'Good Review Rate' = DIVIDE ( [Good Orders], [On Time] )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 2 Inputs
+		lineageTag: 34a7ff8f-d648-4e0b-8a48-385314386094
+
+	measure 'Good Order Share' = DIVIDE ( [Good Orders], [Valid Orders] )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 1 North Star
+		lineageTag: f4acc3f0-be5b-4be8-9367-b119381dc38b
+
+	measure GMV =
+			
+			CALCULATE ( SUM ( fact_orders[item_value] ), fact_orders[is_valid_purchase] = TRUE () )
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: 3 Guardrails
+		lineageTag: b10e9af7-2cfc-4aa5-a34a-00589f7745d5
+
+	measure 'Avg Promised Days' =
+			
+			CALCULATE ( AVERAGE ( fact_orders[promised_days] ), fact_orders[is_valid_purchase] = TRUE () )
+		formatString: 0.0
+		displayFolder: 3 Guardrails
+		lineageTag: e010c44e-0fd4-4e3d-9e8c-62b6129f2223
+
+	measure 'Cancellation Rate' = DIVIDE ( [Orders (All)] - [Valid Orders], [Orders (All)] )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 3 Guardrails
+		lineageTag: de6fc711-970e-4864-b8bb-c60f186ab530
+
+	measure 'Freight Share' =
+			
+			VAR freight =
+			    CALCULATE ( SUM ( fact_orders[freight_value] ), fact_orders[is_valid_purchase] = TRUE () )
+			RETURN
+			    DIVIDE ( freight, [GMV] + freight )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 3 Guardrails
+		lineageTag: 73e86812-7f02-44b6-b2c3-d9f8a357f27c
+
+	measure 'New Customers' =
+			
+			CALCULATE (
+			    DISTINCTCOUNT ( fact_orders[customer_unique_id] ),
+			    fact_orders[is_first_purchase] = TRUE ()
+			)
+		formatString: 0
+		displayFolder: 2 Inputs
+		lineageTag: b5c7c6a5-3735-4e96-8ee0-9ae1824c962a
+
+	measure 'Good Orders PM' = CALCULATE ( [Good Orders], DATEADD ( dim_date[Date], -1, MONTH ) )
+		formatString: 0
+		displayFolder: 1 north star
+		lineageTag: 12e2af95-a27b-4a44-bffc-c421f172dda2
+
+	measure 'Good Orders MoM %' = DIVIDE ( [Good Orders] - [Good Orders PM], [Good Orders PM] )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 1 north star
+		lineageTag: 979f87b3-c812-4653-9544-da037c75f944
+
+	measure 'Good Orders PY' = CALCULATE ( [Good Orders], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+		formatString: 0
+		displayFolder: 1 north star
+		lineageTag: 83c277a4-9665-41e0-b962-0cad635aa459
+
+	measure 'Good Orders YoY %' = DIVIDE ( [Good Orders] - [Good Orders PY], [Good Orders PY] )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 1 north star
+		lineageTag: 8ff2bf75-c8fb-472c-ab4a-206185bd030a
+
+	measure 'Valid Orders YoY %' =
+			
+			VAR prev_year = CALCULATE ( [Valid Orders], SAMEPERIODLASTYEAR ( dim_date[Date] ) )
+			RETURN
+			    DIVIDE ( [Valid Orders] - prev_year, prev_year )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 2 inputs
+		lineageTag: 416f19ce-4c9e-4e5a-a0a8-dc0964feaa96
+
+	measure 'On-Time Rate PM' = CALCULATE ( [On-Time Rate], DATEADD ( dim_date[Date], -1, MONTH ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 2 inputs
+		lineageTag: 379701e3-05c2-4c7a-b87f-515ed0e9bef6
+
+	measure 'On-Time Rate Δ pts' = [On-Time Rate] - [On-Time Rate PM]
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 2 inputs
+		lineageTag: 3312c262-6652-48cc-9043-2594c6b3ae59
+
+	measure 'Component Value' =
+			
+			SWITCH (
+			    SELECTEDVALUE ( 'NS Components'[Component] ),
+			    "Orders", [Valid Orders],
+			    "Delivered rate", [Delivered Rate],
+			    "On-time rate", [On-Time Rate],
+			    "Good review rate", [Good Review Rate]
+			)
+		displayFolder: 4 Decomposition
+		lineageTag: 8fe78ac3-7b77-4b8e-8557-8d165684999d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Log Contribution' =
+			
+			VAR cur = [Component Value]
+			VAR prev = CALCULATE ( [Component Value], DATEADD ( dim_date[Date], -1, MONTH ) )
+			RETURN
+			    IF ( cur > 0 && prev > 0, LN ( cur ) - LN ( prev ) )
+		formatString: 0.00
+		displayFolder: 4 Decomposition
+		lineageTag: b25331b6-f0c9-478b-bc70-9ded1369ca96
+
+	measure 'Δ ln Good Orders' =
+			
+			LN ( [Good Orders] ) - LN ( [Good Orders PM] )
+		formatString: 0.00
+		displayFolder: 4 Decomposition
+		lineageTag: 89d2149a-758a-4f48-be24-92c212b1171a
+
+	measure 'Funnel Orders' =
+			
+			VAR s = SELECTEDVALUE ( 'Funnel Steps'[Step Order] )
+			RETURN
+			    COUNTROWS (
+			        FILTER (
+			            fact_orders,
+			            ( s < 2 || fact_orders[is_approved] )
+			                && ( s < 3 || fact_orders[is_shipped] )
+			                && ( s < 4 || fact_orders[is_delivered] )
+			                && ( s < 5 || fact_orders[is_on_time] )
+			                && ( s < 6 || fact_orders[is_good_order] )
+			        )
+			    )
+		formatString: 0
+		displayFolder: 5 Funnel
+		lineageTag: 0396f282-609e-4281-889c-54006492008f
+
+	measure 'Funnel % of Placed' =
+			
+			DIVIDE ( [Funnel Orders], [Orders (All)] )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 5 Funnel
+		lineageTag: c7918f1d-f496-4ae0-a3ab-7c8df9b4e163
+
+	measure 'Funnel Step Conversion' =
+			
+			VAR s = SELECTEDVALUE ( 'Funnel Steps'[Step Order] )
+			VAR PrevOrders =
+			    CALCULATE (
+			        [Funnel Orders],
+			        REMOVEFILTERS ( 'Funnel Steps' ),
+			        'Funnel Steps'[Step Order] = s - 1
+			    )
+			RETURN
+			    IF ( s > 1, DIVIDE ( [Funnel Orders], PrevOrders ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 5 Funnel
+		lineageTag: 428fd144-383f-4056-bd94-8098bc955f67
+
+	measure 'Funnel Good Orders' = ```
+			
+			CALCULATE ( 
+			    [Funnel Orders], 
+			    REMOVEFILTERS ( 'Funnel Steps' ), 
+			    'Funnel Steps'[Step Order] = 6 
+			)
+			```
+		formatString: 0
+		displayFolder: 5 Funnel
+		lineageTag: d2c37b5c-676d-4858-98d6-9790e36a2870
+
+	measure 'Lost Orders' = [Orders (All)] - [Funnel Good Orders]
+		formatString: 0
+		displayFolder: 5 Funnel
+		lineageTag: e018c050-7028-4876-83c3-9d37cbdbd489
+
+	measure 'Data End' = CALCULATE ( MAX ( fact_orders[purchase_date] ), ALL ( fact_orders ) )
+		formatString: General Date
+		displayFolder: 6 Retention
+		lineageTag: a0e2b85a-d9f4-48b7-817d-1fe5e3788407
+
+	measure 'Eligible Customers' =
+			
+			VAR cutoff = [Data End] - [Repeat Window Value]
+			RETURN
+			    COUNTROWS ( FILTER ( customer_repeat, customer_repeat[first_date] <= cutoff ) )
+		formatString: 0
+		displayFolder: 6 Retention
+		lineageTag: b9595c50-3006-46e9-96f2-1820efde277d
+
+	measure 'Repeat Rate Within Window' =
+			
+			VAR w = [Repeat Window Value]
+			VAR cutoff = [Data End] - w
+			VAR eligible = FILTER ( customer_repeat, customer_repeat[first_date] <= cutoff )
+			VAR repeaters =
+			    FILTER (
+			        eligible,
+			        NOT ISBLANK ( customer_repeat[days_to_second] )
+			            && customer_repeat[days_to_second] <= w
+			    )
+			RETURN
+			    DIVIDE ( COUNTROWS ( repeaters ), COUNTROWS ( eligible ) )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 6 Retention
+		lineageTag: 7cd5b133-e037-401f-849e-effa5e33380e
+
+	measure 'Repeat GMV Share' = ```
+			
+			DIVIDE ( 
+			    CALCULATE ( [GMV], fact_orders[is_first_purchase] = FALSE () ), 
+			    [GMV] 
+			)
+			```
+		displayFolder: 6 Retention
+		lineageTag: 6c2887f2-8688-4a47-b65f-dc95a1f25919
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Implied GMV Change' =
+			
+			[Repeat GMV Share] * ( [Repeat Multiplier Value] - 1 )
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 6 Retention
+		lineageTag: b3bdcae9-3800-486f-a2fd-7cf57d0ee125
+
+	measure 'Buyer Cohort Retention' =
+			
+			DIVIDE (
+			    DISTINCTCOUNT ( customer_months[customer_unique_id] ),
+			    CALCULATE ( DISTINCTCOUNT ( customer_months[customer_unique_id] ), customer_months[offset] = 0 )
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 6 Retention
+		lineageTag: 48897243-7446-4bbe-827a-3c265d5668ea
+
+	measure 'Seller Cohort Retention' =
+			
+			DIVIDE (
+			    DISTINCTCOUNT ( seller_months[seller_id] ),
+			    CALCULATE ( DISTINCTCOUNT ( seller_months[seller_id] ), seller_months[offset] = 0 )
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 6 Retention
+		lineageTag: 1c2b2ad6-afef-464c-865c-a49f7b41512c
+
+	measure 'Buyer M3 Retention' =
+			
+			AVERAGEX (
+			    VALUES ( customer_months[cohort] ),
+			    CALCULATE ( [Buyer Cohort Retention], customer_months[offset] = 3 )
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 6 Retention
+		lineageTag: 3d29d531-71f8-48df-bfc0-c4892972768d
+
+	measure 'Seller M3 Retention' =
+			
+			AVERAGEX (
+			    VALUES ( seller_months[cohort] ),
+			    CALCULATE ( [Seller Cohort Retention], seller_months[offset] = 3 )
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 6 Retention
+		lineageTag: 628391b1-6c77-49ba-bdc2-d84b2ad017eb
+
+	/// Good Orders restricted to orders that contain the items currently filtered (e.g. a product category). Bidirectional filtering made explicit in one measure instead of model-wide.
+	measure 'Good Orders (Item Filters)' = CALCULATE ( [Good Orders], CROSSFILTER ( fact_order_items[order_id], fact_orders[order_id], BOTH ) )
+		formatString: 0
+		displayFolder: 9 QA
+		lineageTag: 38930cc2-0cc3-468c-b4af-92eadaed2aec
+
+	measure 'Δ Orders vs P3' = [Valid Orders] - SUM ( expected_monthly_kpis[orders] )
+		formatString: 0
+		displayFolder: 9 QA
+		lineageTag: 4c1e263e-7562-475c-9671-b0a2bb6b023d
+
+	measure 'Δ Good Orders vs P3' = [Good Orders] - SUM ( expected_monthly_kpis[good_orders] )
+		formatString: 0
+		displayFolder: 9 QA
+		lineageTag: 765ac696-667f-4b71-819a-6bb9e5dbad10
+
+	measure 'Δ GMV vs P3' = ROUND ( [GMV] - SUM ( expected_monthly_kpis[gmv] ), 2 )
+		formatString: 0.00
+		displayFolder: 9 QA
+		lineageTag: 2902a9b9-a4c7-434d-b268-086258f83021
+
+	measure 'Δ Delivered vs P3' = [Delivered] - SUM ( expected_monthly_kpis[delivered] )
+		formatString: 0
+		displayFolder: 9 QA
+		lineageTag: 124e8fee-eecf-4e95-ad49-f4839fdcf484
+
+	measure 'Δ On Time vs P3' = [On Time] - SUM ( expected_monthly_kpis[on_time] )
+		formatString: 0
+		displayFolder: 9 QA
+		lineageTag: ffa3760d-959c-4d00-bca3-205f5754de71
+
+	measure 'Δ New Customers vs P3' = [New Customers] - SUM ( expected_monthly_kpis[new_customers] )
+		formatString: 0
+		displayFolder: 9 QA
+		lineageTag: b60f7e9c-3b09-4d50-8837-e72346acba12
+
+	measure 'Δ Promised Days vs P3' = ROUND ( [Avg Promised Days] - AVERAGE ( expected_monthly_kpis[promised_days] ), 6 )
+		formatString: 0.000000
+		displayFolder: 9 QA
+		lineageTag: 2bc33275-76f3-46b6-a609-69bb190cc224
+
+	measure 'State Title' = "Order health — " & SELECTEDVALUE ( dim_customer[customer_state], "all states" )
+		displayFolder: 8 Report
+		lineageTag: a4f1020f-eb1f-4ecf-b913-c4d9b979795f
+
+	measure 'Avg Promised Days Δ' = [Avg Promised Days] - CALCULATE ( [Avg Promised Days], DATEADD ( dim_date[Date], -1, MONTH ) )
+		formatString: +0.0;-0.0;0.0
+		displayFolder: 3 Guardrails
+		lineageTag: e040aa3c-0769-43e8-990e-967de035aa79
+
+	measure 'PBI Value' =
+			VAR cid = SELECTEDVALUE ( point_checks[Check Id] )
+			VAR dec = SELECTEDVALUE ( point_checks[Decimals] )
+			VAR v =
+			    SWITCH (
+			        cid,
+			        1, [Orders (All)],
+			        2, [Valid Orders],
+			        3, [Delivered],
+			        4, [On Time],
+			        5, [Good Orders],
+			        6, [Delivered Rate],
+			        7, [On-Time Rate],
+			        8, [Good Review Rate],
+			        9, [GMV],
+			        10, [Freight Share],
+			        11, [Cancellation Rate],
+			        12, [Avg Promised Days],
+			        13, [New Customers],
+			        14, CALCULATE ( [Valid Orders], dim_date[Month] = "Aug 2018" ),
+			        15, CALCULATE ( [Good Orders], dim_date[Month] = "Aug 2018" ),
+			        16, CALCULATE ( [New Customers], dim_date[Month] = "Aug 2018" ),
+			        17, CALCULATE ( [GMV], dim_date[Month] = "Nov 2017" ),
+			        18, CALCULATE ( [On-Time Rate], dim_date[Month] = "Oct 2017" ),
+			        19, CALCULATE ( [On-Time Rate], dim_date[Month] = "Nov 2017" ),
+			        20, CALCULATE ( [On-Time Rate], dim_date[Month] = "Mar 2018" ),
+			        21, CALCULATE ( [Funnel Orders], 'Funnel Steps'[Step Order] = 1 ),
+			        22, CALCULATE ( [Funnel Orders], 'Funnel Steps'[Step Order] = 2 ),
+			        23, CALCULATE ( [Funnel Orders], 'Funnel Steps'[Step Order] = 3 ),
+			        24, CALCULATE ( [Funnel Orders], 'Funnel Steps'[Step Order] = 4 ),
+			        25, CALCULATE ( [Funnel Orders], 'Funnel Steps'[Step Order] = 5 ),
+			        26, CALCULATE ( [Funnel Orders], 'Funnel Steps'[Step Order] = 6 ),
+			        27, CALCULATE ( [Repeat Rate Within Window], 'Repeat Window'[Repeat Window] = 30 ),
+			        28, CALCULATE ( [Repeat Rate Within Window], 'Repeat Window'[Repeat Window] = 90 ),
+			        29, CALCULATE ( [Repeat Rate Within Window], 'Repeat Window'[Repeat Window] = 180 ),
+			        30, CALCULATE ( [Repeat Rate Within Window], 'Repeat Window'[Repeat Window] = 365 ),
+			        31, [Repeat GMV Share],
+			        32, [Buyer M3 Retention],
+			        33, [Seller M3 Retention]
+			    )
+			RETURN
+			    ROUND ( v, dec )
+		formatString: #,0.####
+		displayFolder: 9 QA
+		lineageTag: d911193d-77eb-4a84-bf7c-c4c22e92723d
+
+	measure 'Δ Point Check' = ROUND ( [PBI Value] - SELECTEDVALUE ( point_checks[Project 3] ), SELECTEDVALUE ( point_checks[Decimals] ) )
+		formatString: 0.####
+		displayFolder: 9 QA
+		lineageTag: d6132280-59e1-4a24-a014-0605d33b1e1e
+
+	partition _Measures = m
+		mode: import
+		source =
+				let
+				  Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t]),
+				    #"Removed Columns" = Table.RemoveColumns(Source,{"Column1"})
+				in
+				  #"Removed Columns"
+
+	annotation PBI_ResultType = Table
+

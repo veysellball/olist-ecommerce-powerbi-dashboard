@@ -1,0 +1,58 @@
+table metric_dictionary
+	lineageTag: 15c15060-b30b-4f9f-a961-e8a69009e5bb
+
+	column Tier
+		dataType: string
+		lineageTag: 03187c9c-c716-4cf0-a104-195a9f215c44
+		summarizeBy: none
+		sourceColumn: Tier
+
+	column Metric
+		dataType: string
+		lineageTag: 27bcf67c-6712-448a-993c-b9d8e1a8ead2
+		summarizeBy: none
+		sourceColumn: Metric
+
+	column Definition
+		dataType: string
+		lineageTag: f57f0800-d8ae-4f58-8348-1cdca6ab1d21
+		summarizeBy: none
+		sourceColumn: Definition
+
+	column 'DAX measure'
+		dataType: string
+		lineageTag: c5eb0515-50ac-4785-9d4e-1d4c7738c6e6
+		summarizeBy: none
+		sourceColumn: DAX measure
+
+	column 'Project 3 source'
+		dataType: string
+		lineageTag: 6c7bd938-7490-4af7-b948-39d64fc08be2
+		summarizeBy: none
+		sourceColumn: Project 3 source
+
+	column Owner
+		dataType: string
+		lineageTag: 2a7128e5-a359-4600-a4d1-6a48c183ec4a
+		summarizeBy: none
+		sourceColumn: Owner
+
+	column Guardrail
+		dataType: string
+		lineageTag: 64d1e1ba-9c9f-4863-a725-df000783c5a7
+		summarizeBy: none
+		sourceColumn: Guardrail
+
+	partition metric_dictionary = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(
+				        File.Contents("C:\Users\veysel\Desktop\Projects\Datascience_Portfolio\project3plus_powerbi\docs\metric_dictionary.csv"),
+				        [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+				    ),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"Tier", type text}, {"Metric", type text}, {"Definition", type text}, {"DAX measure", type text}, {"Project 3 source", type text}, {"Owner", type text}, {"Guardrail", type text}})
+				in
+				    Typed
+

@@ -1,0 +1,40 @@
+table 'NS Components'
+	lineageTag: 861c51d2-cfd9-46d7-9abb-88bff59088d3
+
+	column Component
+		dataType: string
+		lineageTag: 401b4423-1325-4b05-8c8c-164210248da2
+		summarizeBy: none
+		sourceColumn: Component
+		sortByColumn: Sort
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column Sort
+		dataType: string
+		lineageTag: d7bd65b9-5f5c-41a7-96cc-6b74e07f94c8
+		summarizeBy: none
+		sourceColumn: Sort
+
+		annotation SummarizationSetBy = Automatic
+
+	column Owner
+		dataType: string
+		lineageTag: c5b79c23-0a2b-4fc3-9bca-19e7030614df
+		summarizeBy: none
+		sourceColumn: Owner
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'NS Components' = m
+		mode: import
+		source =
+				let
+				  Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("RcyxDoJAEIThVyFbQyH6BpjYSCgszysuMCEbTw72Foxv7wYLin+qL+McdTJAMpV0stogLyhPI/nS0RWRNwiGQoLiqQZqqwkiDCnSnHfWTZXyGwc673tPI2fl/o9uKdkNNsbngBfrgRjtbFlDZP2S9z8=", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Component = _t, Sort = _t, Owner = _t])
+				in
+				  Source
+
+	annotation PBI_ResultType = Table
+

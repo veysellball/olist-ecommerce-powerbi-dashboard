@@ -1,0 +1,52 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+queryGroup Staging
+
+	annotation PBI_QueryGroupOrder = 0
+
+queryGroup Model
+
+	annotation PBI_QueryGroupOrder = 1
+
+queryGroup Analytics
+
+	annotation PBI_QueryGroupOrder = 2
+
+queryGroup Functions
+
+	annotation PBI_QueryGroupOrder = 3
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["pDataPath","fnReadCsv","stg_orders","stg_customers","stg_items","stg_reviews_latest","fact_orders","dim_customer","dim_product","dim_seller","fact_order_items","fnCohort","customer_months","seller_months","customer_repeat","_Measures","NS Components","Funnel Steps"]
+
+annotation PBI_ProTooling = ["MCP-PBIModeling","DevMode"]
+
+ref table pDataPath
+ref table fact_orders
+ref table dim_customer
+ref table dim_product
+ref table dim_seller
+ref table fact_order_items
+ref table customer_months
+ref table seller_months
+ref table customer_repeat
+ref table dim_date
+ref table _Measures
+ref table 'NS Components'
+ref table 'Funnel Steps'
+ref table 'Repeat Window'
+ref table 'Repeat Multiplier'
+ref table expected_monthly_kpis
+ref table metric_dictionary
+ref table point_checks
+
+ref cultureInfo en-US
+

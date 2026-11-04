@@ -1,0 +1,29 @@
+table 'Repeat Multiplier'
+	lineageTag: 03038144-0a5e-470f-9328-9aeba360f0fa
+
+	measure 'Repeat Multiplier Value' = SELECTEDVALUE('Repeat Multiplier'[Repeat Multiplier], 2)
+		displayFolder: 7 Parameters
+		lineageTag: 049ef15b-4d50-46ef-a73c-7d4bb7dbfd8e
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Repeat Multiplier'
+		lineageTag: 49b2e9d7-84f0-4108-8b57-4c93897082e9
+		summarizeBy: none
+		sourceColumn: [Value]
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 0
+				}
+
+		annotation SummarizationSetBy = User
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition 'Repeat Multiplier' = calculated
+		mode: import
+		source = GENERATESERIES(1, 5, 0.1)
+
+	annotation PBI_Id = fb4abcc5af4c4ab694f6cfc026d63db5
+

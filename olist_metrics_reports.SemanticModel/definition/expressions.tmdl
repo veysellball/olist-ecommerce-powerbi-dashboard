@@ -1,0 +1,132 @@
+expression fnReadCsv =
+		let
+		    Source = (fileName as text) as table =>
+		let
+		    Source = Csv.Document(
+		        File.Contents(pDataPath & fileName),
+		        [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]
+		    ),
+		    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true])
+		in
+		    Promoted
+		
+		in
+		    Source
+	lineageTag: 38fc60be-8376-4501-a583-138051228658
+	queryGroup: Functions
+
+	annotation PBI_ResultType = Function
+
+expression fnCohort =
+		let
+		    Source = (events as table, idColumn as text, monthColumn as text) as table =>
+		let
+		    Distinct = Table.Distinct(Table.SelectColumns(events, {idColumn, monthColumn})),
+		    MonthIndex = Table.AddColumn(Distinct, "m_idx",
+		        each Date.Year(Record.Field(_, monthColumn)) * 12 + Date.Month(Record.Field(_, monthColumn)), Int64.Type),
+		    First = Table.Group(MonthIndex, {idColumn}, {
+		        {"first_idx", each List.Min([m_idx]), Int64.Type},
+		        {"cohort", each List.Min(Table.Column(_, monthColumn)), type date}
+		    }),
+		    Joined = Table.NestedJoin(MonthIndex, {idColumn}, First, {idColumn}, "f", JoinKind.Inner),
+		    Expanded = Table.ExpandTableColumn(Joined, "f", {"first_idx", "cohort"}),
+		    Offset = Table.AddColumn(Expanded, "offset", each [m_idx] - [first_idx], Int64.Type),
+		    Kept = Table.SelectColumns(Offset, {idColumn, monthColumn, "cohort", "offset"})
+		in
+		    Kept
+		in
+		    Source
+	lineageTag: 3ce57c22-ca97-4173-b336-22c993749bc7
+	queryGroup: Functions
+
+	annotation PBI_ResultType = Function
+
+expression stg_orders =
+		let
+		    Source = let
+		    Source = fnReadCsv("olist_orders_dataset.csv"),
+		    Typed = Table.TransformColumnTypes(
+		        Source,
+		        {
+		            {"order_id", type text}, {"customer_id", type text}, {"order_status", type text},
+		            {"order_purchase_timestamp", type datetime},
+		            {"order_approved_at", type datetime},
+		            {"order_delivered_carrier_date", type datetime},
+		            {"order_delivered_customer_date", type datetime},
+		            {"order_estimated_delivery_date", type datetime}
+		        },
+		        "en-US"
+		    )
+		in
+		    Typed
+		
+		in
+		    Source
+	lineageTag: 91708a62-1003-4d46-8289-92b613e97053
+	queryGroup: Staging
+
+	annotation PBI_ResultType = Table
+
+expression stg_customers =
+		let
+		    Source = fnReadCsv("olist_customers_dataset.csv"),
+		    Typed = Table.TransformColumnTypes(
+		        Source,
+		        {
+		            {"customer_id", type text}, {"customer_unique_id", type text},
+		            {"customer_zip_code_prefix", type text},   // text: leading zeros are meaningful
+		            {"customer_city", type text}, {"customer_state", type text}
+		        }
+		    )
+		in
+		    Typed
+	lineageTag: fb9970a9-0892-4dc1-96b6-e2c15927856e
+	queryGroup: Staging
+
+	annotation PBI_ResultType = Table
+
+expression stg_items =
+		let
+		    Source = fnReadCsv("olist_order_items_dataset.csv"),
+		    Typed = Table.TransformColumnTypes(
+		        Source,
+		        {
+		            {"order_id", type text},
+		            {"order_item_id", Int64.Type},
+		            {"product_id", type text},
+		            {"seller_id", type text},
+		            {"shipping_limit_date", type datetime},
+		            {"price", type number},
+		            {"freight_value", type number}
+		        },
+		        "en-US"
+		    )
+		in
+		    Typed
+	lineageTag: 105e04bb-1e60-461e-80d1-1428e3c3fb5b
+	queryGroup: Staging
+
+	annotation PBI_ResultType = Table
+
+expression stg_reviews_latest =
+		let
+		    Source = fnReadCsv("olist_order_reviews_dataset.csv"),
+		    Kept = Table.SelectColumns(Source, {"order_id", "review_score", "review_answer_timestamp"}),
+		    Typed = Table.TransformColumnTypes(
+		        Kept,
+		        {{"order_id", type text}, {"review_score", Int64.Type}, {"review_answer_timestamp", type datetime}},
+		        "en-US"
+		    ),
+		    // some orders have several reviews: keep the most recent answer (= arg_max in Project 3)
+		    Latest = Table.Group(
+		        Typed,
+		        {"order_id"},
+		        {{"review_score", each Table.Max(_, "review_answer_timestamp")[review_score], Int64.Type}}
+		    )
+		in
+		    Latest
+	lineageTag: 3d33bad1-e18b-4456-a3be-e910947adf82
+	queryGroup: Staging
+
+	annotation PBI_ResultType = Table
+

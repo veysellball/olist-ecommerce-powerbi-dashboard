@@ -1,0 +1,46 @@
+table dim_customer
+	lineageTag: e08b0859-e9e5-4af8-ac61-c954ab8ee281
+
+	column customer_id
+		dataType: string
+		lineageTag: b0146d6a-d8af-4d64-8745-9fd0113b8c6e
+		summarizeBy: none
+		sourceColumn: customer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_unique_id
+		dataType: string
+		lineageTag: f11ee9c7-5f10-49c4-84ce-c03a264ae27c
+		summarizeBy: none
+		sourceColumn: customer_unique_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_city
+		dataType: string
+		lineageTag: 77a988ca-d0ff-4e55-b233-b3a5742251f8
+		summarizeBy: none
+		sourceColumn: customer_city
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_state
+		dataType: string
+		lineageTag: c743c277-a071-4e8d-add0-a1a59d14bb6e
+		summarizeBy: none
+		sourceColumn: customer_state
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_customer = m
+		mode: import
+		queryGroup: Model
+		source =
+				let
+				    Kept = Table.SelectColumns(stg_customers, {"customer_id", "customer_unique_id", "customer_city", "customer_state"})
+				in
+				    Kept
+
+	annotation PBI_ResultType = Table
+

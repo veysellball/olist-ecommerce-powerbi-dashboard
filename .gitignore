@@ -14,3 +14,10 @@ venv/
 
 # Power BI auto-save / backup artifacts (commit final .pbix, ignore temp locks)
 *.pbix.temp
+
+# PBIP local-only files (23 MB cache + machine-specific settings)
+**/.pbi/cache.abf
+**/.pbi/localSettings.json
+
+# Tool logs
+excalidraw.log

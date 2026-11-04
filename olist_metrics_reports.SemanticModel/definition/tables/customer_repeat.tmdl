@@ -1,0 +1,61 @@
+table customer_repeat
+	lineageTag: 54b09ded-0a7a-47d2-941c-e18b089524d3
+
+	column customer_unique_id
+		dataType: string
+		lineageTag: eaa9e582-67c7-440d-83e4-0bc4130705d1
+		summarizeBy: none
+		sourceColumn: customer_unique_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column first_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 248eca89-6774-4b6b-a5b6-2121b4581ebc
+		summarizeBy: none
+		sourceColumn: first_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column second_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 1bf7aeb0-1370-446a-9756-86db1100ded6
+		summarizeBy: none
+		sourceColumn: second_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column days_to_second
+		dataType: int64
+		formatString: 0
+		lineageTag: 8e13e642-e1b5-42d9-a817-de0a6f98bfa4
+		summarizeBy: sum
+		sourceColumn: days_to_second
+
+		annotation SummarizationSetBy = Automatic
+
+	partition customer_repeat = m
+		mode: import
+		queryGroup: Analytics
+		source =
+				let
+				    Valid = Table.SelectRows(fact_orders, each [is_valid_purchase]),
+				    // a repeat is a new purchase DAY, not a new order_id (Project 1 fix)
+				    Days = Table.Distinct(Table.SelectColumns(Valid, {"customer_unique_id", "purchase_date"})),
+				    PerCustomer = Table.Group(Days, {"customer_unique_id"}, {
+				        {"first_date", each List.Min([purchase_date]), type date},
+				        {"second_date", each let d = List.Sort([purchase_date]) in if List.Count(d) > 1 then d{1} else null, type nullable date}
+				    }),
+				    DaysToSecond = Table.AddColumn(PerCustomer, "days_to_second",
+				        each if [second_date] = null then null else Duration.Days([second_date] - [first_date]), Int64.Type)
+				in
+				    DaysToSecond
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,29 @@
+table 'Repeat Window'
+	lineageTag: d1d665e8-6a21-499d-85f5-b78f3a662312
+
+	measure 'Repeat Window Value' = SELECTEDVALUE('Repeat Window'[Repeat Window], 180)
+		displayFolder: 7 Parameters
+		lineageTag: 7e56d19d-9992-4ec6-b358-2966859f53ee
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Repeat Window'
+		dataType: double
+		formatString: 0
+		lineageTag: 52570759-50dc-4b0e-9a41-0edde5dcf363
+		summarizeBy: none
+		sourceColumn: [Value]
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 0
+				}
+
+		annotation SummarizationSetBy = User
+
+	partition 'Repeat Window' = calculated
+		mode: import
+		source = GENERATESERIES(30, 365, 1)
+
+	annotation PBI_Id = 280fd9386b424c8cb851895f498ccd7e
+

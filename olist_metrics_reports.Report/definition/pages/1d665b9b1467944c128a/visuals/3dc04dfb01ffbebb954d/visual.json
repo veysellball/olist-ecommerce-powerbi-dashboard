@@ -1,0 +1,109 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "3dc04dfb01ffbebb954d",
+  "position": {
+    "x": 980,
+    "y": 80,
+    "z": 2,
+    "height": 500,
+    "width": 920,
+    "tabOrder": 2
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Funnel Steps"
+                    }
+                  },
+                  "Property": "Step"
+                }
+              },
+              "queryRef": "Funnel Steps.Step",
+              "nativeQueryRef": "Step"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Funnel Orders"
+                }
+              },
+              "queryRef": "_Measures.Funnel Orders",
+              "nativeQueryRef": "Funnel Orders"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Funnel % of Placed"
+                }
+              },
+              "queryRef": "_Measures.Funnel % of Placed",
+              "nativeQueryRef": "Funnel % of Placed"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Measures"
+                    }
+                  },
+                  "Property": "Funnel Step Conversion"
+                }
+              },
+              "queryRef": "_Measures.Funnel Step Conversion",
+              "nativeQueryRef": "Funnel Step Conversion"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Funnel detail'"
+                }
+              }
+            },
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "14D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

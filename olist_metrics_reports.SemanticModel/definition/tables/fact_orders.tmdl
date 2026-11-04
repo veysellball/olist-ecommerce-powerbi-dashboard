@@ -1,0 +1,311 @@
+table fact_orders
+	lineageTag: 8f453acb-298b-4983-8a3b-1ac910256c70
+
+	column order_id
+		dataType: string
+		isHidden
+		lineageTag: 55256b65-1b3a-45a3-9caf-ea3a52af2f0b
+		summarizeBy: none
+		sourceColumn: order_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_id
+		dataType: string
+		isHidden
+		lineageTag: feaea100-8e85-4af5-9c33-89ebdc4ec2bd
+		summarizeBy: none
+		sourceColumn: customer_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_unique_id
+		dataType: string
+		lineageTag: 46d62475-511e-467b-8387-3f74ac7b1bf0
+		summarizeBy: none
+		sourceColumn: customer_unique_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_status
+		dataType: string
+		lineageTag: da746a97-098d-4911-b20c-c9c1b89933f8
+		summarizeBy: none
+		sourceColumn: order_status
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column purchase_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: b1d4c3fb-7742-4a2c-90c6-586f3fdaf892
+		summarizeBy: none
+		sourceColumn: purchase_date
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column is_valid_purchase
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 2aa75ee2-d83e-40dc-bf0b-b97ba35f4110
+		summarizeBy: none
+		sourceColumn: is_valid_purchase
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_approved
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: a037c26b-a2b8-4ef8-95fb-04c443248a64
+		summarizeBy: none
+		sourceColumn: is_approved
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_shipped
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: c572d93f-3fbf-4040-ac05-298649b7b9aa
+		summarizeBy: none
+		sourceColumn: is_shipped
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_delivered
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: c8767c35-8c70-4a27-9a98-a84935a3a4a6
+		summarizeBy: none
+		sourceColumn: is_delivered
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_on_time
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 4cac5fac-caae-42b5-92c8-d70d3c972600
+		summarizeBy: none
+		sourceColumn: is_on_time
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_good_order
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 3d335633-e361-409c-a139-23489add31e5
+		summarizeBy: none
+		sourceColumn: is_good_order
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_first_purchase
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 22e7255f-0930-40fc-a36d-7a31b7825923
+		summarizeBy: none
+		sourceColumn: is_first_purchase
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column promised_days
+		dataType: int64
+		formatString: 0
+		lineageTag: 041425cc-b4e2-4305-8dad-8bee9013afd9
+		summarizeBy: sum
+		sourceColumn: promised_days
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column item_value
+		dataType: double
+		lineageTag: 08700b3e-f562-4c8b-9e99-95f7fca8dfa7
+		summarizeBy: sum
+		sourceColumn: item_value
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column freight_value
+		dataType: double
+		lineageTag: cb9f2de6-66db-47ae-859f-6daee7b30632
+		summarizeBy: sum
+		sourceColumn: freight_value
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column review_score
+		dataType: int64
+		formatString: 0
+		lineageTag: f0676c70-6e31-42e8-b6a5-5cc73f64c60d
+		summarizeBy: sum
+		sourceColumn: review_score
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_orders = m
+		mode: import
+		queryGroup: Model
+		source =
+				let
+				    // 1. the person behind the order (Olist's customer_id is per ORDER, not per person)
+				    WithCustomer = Table.NestedJoin(stg_orders, {"customer_id"}, stg_customers, {"customer_id"}, "c", JoinKind.Inner),
+				    ExpandCustomer = Table.ExpandTableColumn(WithCustomer, "c", {"customer_unique_id"}),
+				
+				    // 2. item value and freight aggregated to ONE row per order BEFORE joining (grain!)
+				    ItemsByOrder = Table.Group(
+				        stg_items,
+				        {"order_id"},
+				        {
+				            {"item_value", each List.Sum([price]), type number},
+				            {"freight_value", each List.Sum([freight_value]), type number}
+				        }
+				    ),
+				    WithItems = Table.NestedJoin(ExpandCustomer, {"order_id"}, ItemsByOrder, {"order_id"}, "i", JoinKind.LeftOuter),
+				    ExpandItems = Table.ExpandTableColumn(WithItems, "i", {"item_value", "freight_value"}),
+				    NoNullValue = Table.ReplaceValue(ExpandItems, null, 0, Replacer.ReplaceValue, {"item_value", "freight_value"}),
+				
+				    // 3. latest review score
+				    WithReview = Table.NestedJoin(NoNullValue, {"order_id"}, stg_reviews_latest, {"order_id"}, "r", JoinKind.LeftOuter),
+				    ExpandReview = Table.ExpandTableColumn(WithReview, "r", {"review_score"}),
+				
+				    // 4. business flags: same rules as ORDER_FACTS_SQL
+				    PurchaseDate = Table.AddColumn(ExpandReview, "purchase_date", each Date.From([order_purchase_timestamp]), type date),
+				    IsValid = Table.AddColumn(PurchaseDate, "is_valid_purchase",
+				        each not List.Contains({"canceled", "unavailable"}, [order_status]), type logical),
+				    IsApproved = Table.AddColumn(IsValid, "is_approved", each [order_approved_at] <> null, type logical),
+				    IsShipped = Table.AddColumn(IsApproved, "is_shipped", each [order_delivered_carrier_date] <> null, type logical),
+				    IsDelivered = Table.AddColumn(IsShipped, "is_delivered",
+				        each [order_status] = "delivered" and [order_delivered_customer_date] <> null, type logical),
+				    // day-level comparison: the promise is a DATE, not a timestamp (Project 1 fix)
+				    IsOnTime = Table.AddColumn(IsDelivered, "is_on_time",
+				        each [is_delivered] and Date.From([order_delivered_customer_date]) <= Date.From([order_estimated_delivery_date]),
+				        type logical),
+				    PromisedDays = Table.AddColumn(IsOnTime, "promised_days",
+				        each Duration.Days(Date.From([order_estimated_delivery_date]) - [purchase_date]), Int64.Type),
+				    IsGood = Table.AddColumn(PromisedDays, "is_good_order", each [is_on_time] and ([review_score] ?? 0) >= 4, type logical),
+				
+				    // 5. first purchase DAY per person, over ALL history, BEFORE the window filter
+				    ValidOnly = Table.SelectRows(IsGood, each [is_valid_purchase]),
+				    FirstPurchase = Table.Group(ValidOnly, {"customer_unique_id"},
+				        {{"first_purchase_date", each List.Min([purchase_date]), type date}}),
+				    WithFirst = Table.NestedJoin(IsGood, {"customer_unique_id"}, FirstPurchase, {"customer_unique_id"}, "f", JoinKind.LeftOuter),
+				    ExpandFirst = Table.ExpandTableColumn(WithFirst, "f", {"first_purchase_date"}),
+				    IsFirst = Table.AddColumn(ExpandFirst, "is_first_purchase",
+				        each [is_valid_purchase] and [purchase_date] = [first_purchase_date], type logical),
+				
+				    // 6. the analysis window: Project 3's START and END
+				    Window = Table.SelectRows(IsFirst, each [purchase_date] >= #date(2017, 1, 1) and [purchase_date] <= #date(2018, 8, 31)),
+				
+				    // 7. keep only what the model needs, with explicit types
+				    Kept = Table.SelectColumns(Window, {
+				        "order_id", "customer_id", "customer_unique_id", "order_status", "purchase_date",
+				        "is_valid_purchase", "is_approved", "is_shipped", "is_delivered", "is_on_time",
+				        "is_good_order", "is_first_purchase", "promised_days", "item_value", "freight_value", "review_score"
+				    }),
+				    Typed = let
+				    // 1. the person behind the order (Olist's customer_id is per ORDER, not per person)
+				    WithCustomer = Table.NestedJoin(stg_orders, {"customer_id"}, stg_customers, {"customer_id"}, "c", JoinKind.Inner),
+				    ExpandCustomer = Table.ExpandTableColumn(WithCustomer, "c", {"customer_unique_id"}),
+				
+				    // 2. item value and freight aggregated to ONE row per order BEFORE joining (grain!)
+				    ItemsByOrder = Table.Group(
+				        stg_items,
+				        {"order_id"},
+				        {
+				            {"item_value", each List.Sum([price]), type number},
+				            {"freight_value", each List.Sum([freight_value]), type number}
+				        }
+				    ),
+				    WithItems = Table.NestedJoin(ExpandCustomer, {"order_id"}, ItemsByOrder, {"order_id"}, "i", JoinKind.LeftOuter),
+				    ExpandItems = Table.ExpandTableColumn(WithItems, "i", {"item_value", "freight_value"}),
+				    NoNullValue = Table.ReplaceValue(ExpandItems, null, 0, Replacer.ReplaceValue, {"item_value", "freight_value"}),
+				
+				    // 3. latest review score
+				    WithReview = Table.NestedJoin(NoNullValue, {"order_id"}, stg_reviews_latest, {"order_id"}, "r", JoinKind.LeftOuter),
+				    ExpandReview = Table.ExpandTableColumn(WithReview, "r", {"review_score"}),
+				
+				    // 4. business flags: same rules as ORDER_FACTS_SQL
+				    PurchaseDate = Table.AddColumn(ExpandReview, "purchase_date", each Date.From([order_purchase_timestamp]), type date),
+				    IsValid = Table.AddColumn(PurchaseDate, "is_valid_purchase",
+				        each not List.Contains({"canceled", "unavailable"}, [order_status]), type logical),
+				    IsApproved = Table.AddColumn(IsValid, "is_approved", each [order_approved_at] <> null, type logical),
+				    IsShipped = Table.AddColumn(IsApproved, "is_shipped", each [order_delivered_carrier_date] <> null, type logical),
+				    IsDelivered = Table.AddColumn(IsShipped, "is_delivered",
+				        each [order_status] = "delivered" and [order_delivered_customer_date] <> null, type logical),
+				    // day-level comparison: the promise is a DATE, not a timestamp (Project 1 fix)
+				    IsOnTime = Table.AddColumn(IsDelivered, "is_on_time",
+				        each [is_delivered] and Date.From([order_delivered_customer_date]) <= Date.From([order_estimated_delivery_date]),
+				        type logical),
+				    PromisedDays = Table.AddColumn(IsOnTime, "promised_days",
+				        each Duration.Days(Date.From([order_estimated_delivery_date]) - [purchase_date]), Int64.Type),
+				    IsGood = Table.AddColumn(PromisedDays, "is_good_order", each [is_on_time] and ([review_score] ?? 0) >= 4, type logical),
+				
+				    // 5. first purchase DAY per person, over ALL history, BEFORE the window filter
+				    ValidOnly = Table.SelectRows(IsGood, each [is_valid_purchase]),
+				    FirstPurchase = Table.Group(ValidOnly, {"customer_unique_id"},
+				        {{"first_purchase_date", each List.Min([purchase_date]), type date}}),
+				    WithFirst = Table.NestedJoin(IsGood, {"customer_unique_id"}, FirstPurchase, {"customer_unique_id"}, "f", JoinKind.LeftOuter),
+				    ExpandFirst = Table.ExpandTableColumn(WithFirst, "f", {"first_purchase_date"}),
+				    IsFirst = Table.AddColumn(ExpandFirst, "is_first_purchase",
+				        each [is_valid_purchase] and [purchase_date] = [first_purchase_date], type logical),
+				
+				    // 6. the analysis window: Project 3's START and END
+				    Window = Table.SelectRows(IsFirst, each [purchase_date] >= #date(2017, 1, 1) and [purchase_date] <= #date(2018, 8, 31)),
+				
+				    // 7. keep only what the model needs, with explicit types
+				    Kept = Table.SelectColumns(Window, {
+				        "order_id", "customer_id", "customer_unique_id", "order_status", "purchase_date",
+				        "is_valid_purchase", "is_approved", "is_shipped", "is_delivered", "is_on_time",
+				        "is_good_order", "is_first_purchase", "promised_days", "item_value", "freight_value", "review_score"
+				    }),
+				    Typed = Table.TransformColumnTypes(Kept, {
+				        {"customer_unique_id", type text}, {"item_value", type number},
+				        {"freight_value", type number}, {"review_score", Int64.Type}
+				    })
+				in
+				    Typed
+				
+				in
+				    Typed
+
+	changedProperty = IsHidden
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,22 @@
+table pDataPath
+	lineageTag: 049d2242-ed52-405c-b910-8627b8535a70
+
+	column pDataPath
+		dataType: string
+		lineageTag: 679b395d-d9b3-4109-a386-2a06dc313d7c
+		summarizeBy: none
+		sourceColumn: pDataPath
+
+		annotation SummarizationSetBy = Automatic
+
+	partition pDataPath = m
+		mode: import
+		queryGroup: Staging
+		source =
+				let
+				    Source = "c:\Users\veysel\Desktop\Projects\Datascience_Portfolio\Project3_Metrics_Dashboard\data\raw\" meta [IsParameterQuery=true, Type="Any", IsParameterQueryRequired=true]
+				in
+				    Source
+
+	annotation PBI_ResultType = Text
+

@@ -1,0 +1,122 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "c8d8f783696d6a42e21b",
+  "position": {
+    "x": 20,
+    "y": 80,
+    "z": 1,
+    "height": 990,
+    "width": 1880,
+    "tabOrder": 1
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "metric_dictionary"
+                    }
+                  },
+                  "Property": "Tier"
+                }
+              },
+              "queryRef": "metric_dictionary.Tier",
+              "nativeQueryRef": "Tier"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "metric_dictionary"
+                    }
+                  },
+                  "Property": "Metric"
+                }
+              },
+              "queryRef": "metric_dictionary.Metric",
+              "nativeQueryRef": "Metric"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "metric_dictionary"
+                    }
+                  },
+                  "Property": "Definition"
+                }
+              },
+              "queryRef": "metric_dictionary.Definition",
+              "nativeQueryRef": "Definition"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "metric_dictionary"
+                    }
+                  },
+                  "Property": "DAX measure"
+                }
+              },
+              "queryRef": "metric_dictionary.DAX measure",
+              "nativeQueryRef": "DAX measure"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "metric_dictionary"
+                    }
+                  },
+                  "Property": "Project 3 source"
+                }
+              },
+              "queryRef": "metric_dictionary.Project 3 source",
+              "nativeQueryRef": "Project 3 source"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "metric_dictionary"
+                    }
+                  },
+                  "Property": "Owner"
+                }
+              },
+              "queryRef": "metric_dictionary.Owner",
+              "nativeQueryRef": "Owner"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "metric_dictionary"
+                    }
+                  },
+                  "Property": "Guardrail"
+                }
+              },
+              "queryRef": "metric_dictionary.Guardrail",
+              "nativeQueryRef": "Guardrail"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -1,0 +1,102 @@
+table fact_order_items
+	lineageTag: de0677b8-2a40-400e-839f-41abf3dea0de
+
+	column order_id
+		dataType: string
+		isHidden
+		lineageTag: 61ed6693-e99e-40db-b2d6-4c443d463355
+		summarizeBy: none
+		sourceColumn: order_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_item_id
+		dataType: int64
+		formatString: 0
+		lineageTag: bd9d5517-82c0-4a75-aae5-e08bc4b37df7
+		summarizeBy: sum
+		sourceColumn: order_item_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: string
+		isHidden
+		lineageTag: 1063c73b-b855-4736-85c2-ddd0d553aef0
+		summarizeBy: none
+		sourceColumn: product_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column seller_id
+		dataType: string
+		isHidden
+		lineageTag: e68dee19-698e-4c65-8c34-fd8e6b323441
+		summarizeBy: none
+		sourceColumn: seller_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column price
+		dataType: double
+		lineageTag: cac92e6d-5a2a-4959-92f4-398e1fef1f65
+		summarizeBy: sum
+		sourceColumn: price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column freight_value
+		dataType: double
+		lineageTag: 723a1fbd-75c9-4dc0-84f8-faf9b583c24d
+		summarizeBy: sum
+		sourceColumn: freight_value
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column is_valid_purchase
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: b1cb6d33-23a8-4d75-b273-ac5e23e11e02
+		summarizeBy: none
+		sourceColumn: is_valid_purchase
+
+		annotation SummarizationSetBy = Automatic
+
+	column purchase_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 3ef01fc7-5aac-4b8c-bf6e-0699bc8a9bcf
+		summarizeBy: none
+		sourceColumn: purchase_date
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition fact_order_items = m
+		mode: import
+		queryGroup: Model
+		source =
+				let
+				    // inner join = only items whose order is inside the model's window
+				    InWindow = Table.NestedJoin(stg_items, {"order_id"}, fact_orders, {"order_id"}, "o", JoinKind.Inner),
+				    Expanded = Table.ExpandTableColumn(InWindow, "o", {"is_valid_purchase", "purchase_date"}),
+				    Kept = Table.SelectColumns(Expanded, {
+				        "order_id", "order_item_id", "product_id", "seller_id", "price", "freight_value",
+				        "is_valid_purchase", "purchase_date"
+				    })
+				in
+				    Kept
+
+	annotation PBI_ResultType = Table
+

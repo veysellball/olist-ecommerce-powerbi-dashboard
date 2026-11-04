@@ -1,0 +1,76 @@
+table dim_date
+	lineageTag: 93c1c2ce-fd5b-4960-a4fb-af529a7a0459
+	dataCategory: Time
+
+	column Date
+		isKey
+		formatString: General Date
+		lineageTag: 8e098d32-aafa-4968-b6e5-39d421811d24
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Year
+		formatString: 0
+		lineageTag: a232f067-e8cd-4640-8dfc-2efe5dab092a
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Year]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Number'
+		formatString: 0
+		lineageTag: 4dce1cfd-a353-4778-9e4b-640b28ac505b
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month Number]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Start'
+		formatString: General Date
+		lineageTag: 82e7201e-5987-49ae-bfab-a280e00dfcae
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month Start]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Month Key'
+		formatString: 0
+		lineageTag: 8ccec6ab-abb0-4755-a37b-99d36a0ad4e4
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Year Month Key]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Month
+		lineageTag: cc2c9622-82e9-4edb-9516-61fcb5afbed8
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month]
+		sortByColumn: 'Year Month Key'
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_date = calculated
+		mode: import
+		source = ```
+				
+				ADDCOLUMNS (
+				    CALENDAR ( DATE ( 2017, 1, 1 ), DATE ( 2018, 12, 31 ) ),
+				    "Year", YEAR ( [Date] ),
+				    "Month Number", MONTH ( [Date] ),
+				    "Month Start", DATE ( YEAR ( [Date] ), MONTH ( [Date] ), 1 ),
+				    "Year Month Key", YEAR ( [Date] ) * 100 + MONTH ( [Date] ),
+				    "Month", FORMAT ( [Date], "mmm yyyy" )
+				)
+				
+				```
+
+	annotation PBI_Id = 8bcbf1eeadd9464486933d5b4a35656b
+

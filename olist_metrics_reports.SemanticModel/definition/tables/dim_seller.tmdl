@@ -1,0 +1,39 @@
+table dim_seller
+	lineageTag: 00671cee-e564-4add-858d-65055e66e65c
+
+	column seller_id
+		dataType: string
+		lineageTag: 5f0e6f4d-56e8-4198-8993-89def7a817eb
+		summarizeBy: none
+		sourceColumn: seller_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column seller_city
+		dataType: string
+		lineageTag: 54f68363-7d1c-4547-8d54-1d86849f14e0
+		summarizeBy: none
+		sourceColumn: seller_city
+
+		annotation SummarizationSetBy = Automatic
+
+	column seller_state
+		dataType: string
+		lineageTag: 1c2006e5-642c-40cd-9c41-58a9f7417572
+		summarizeBy: none
+		sourceColumn: seller_state
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_seller = m
+		mode: import
+		queryGroup: Model
+		source =
+				let
+				    Source = fnReadCsv("olist_sellers_dataset.csv"),
+				    Kept = Table.SelectColumns(Source, {"seller_id", "seller_city", "seller_state"})
+				in
+				    Kept
+
+	annotation PBI_ResultType = Table
+
